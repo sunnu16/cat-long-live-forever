@@ -1,6 +1,6 @@
 # FastAPI
 
-<p align="center">
+<p align="center"> 
  <br/>
  <img src="https://img.shields.io/badge/fastapi-#009688?style=flat&logo=fastapi&logoColor=white" style="height : auto; margin-left : 10px; margin-right : 10px;"/>
  <img src="https://img.shields.io/badge/python-#3776AB?style=flat&logo=python&logoColor=white" style="height : auto; margin-left : 10px; margin-right : 10px;"/>
