@@ -2,7 +2,7 @@
 
 <p align="center">
  <br/>
- <img src="https://img.shields.io/badge/fastapi-#009688?style=flat&logo=React&logoColor=white"/>
+ <img src="https://img.shields.io/badge/fastapi-#009688?style=flat&logo=fastapi&logoColor=white"/>
  <img src="https://img.shields.io/badge/python-#3776AB?style=flat&logo=React&logoColor=white"/>
  <img src="https://img.shields.io/badge/mysql-#4479A1?style=flat&logo=React&logoColor=white"/>
  <img src="https://img.shields.io/badge/ubuntu-#E95420?style=flat&logo=React&logoColor=white"/>
