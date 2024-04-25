@@ -1,5 +1,5 @@
 # FastAPI를 실행 routes폴더들의 다른 라우트들을 불러와 포함시키는 역할
-
+'''
 from fastapi import FastAPI
 from typing import Union
 from fastapi import Depends
@@ -10,11 +10,11 @@ from app.database.database import engineconn
 from app.models.models import User
 
 
-'''
+
 from app.database.database import engineconn
 from pydantic import testmodel
 from app.models.models import User
-'''
+
 
 app = FastAPI()
 
@@ -35,7 +35,6 @@ def first_get():
 
 
 
-'''
 #FastAPI
 app = FastAPI()
 

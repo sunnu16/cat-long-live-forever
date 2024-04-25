@@ -1,7 +1,7 @@
 # model 정의 
 
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from SQLAlchemy import Column, ForeignKey, Integer, String, DateTime
+from SQLAlchemy.ext.declarative import declarative_base
 
 '''
 from sqlalchemy.orm import relationship
