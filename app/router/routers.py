@@ -4,17 +4,15 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from database.connection import get_db
-from crud import users
+from fastapi import HTTPException
 
+from crud import users
+from database import schema
 
 #user router
-user = APIRouter(
-    prefix= "/user"
-)
+router = APIRouter()
 
-
-#user 조회
-@user.get("/{user_id}")
+@router.get("/user/{user_id}")
 
 def get_user(user_id : int, db : Session = Depends(get_db)):
 
@@ -23,20 +21,52 @@ def get_user(user_id : int, db : Session = Depends(get_db)):
     return response
 
 
-#로그인
 
-#회원가입
-
-#회원 탈퇴
+#회원가입 router
 
 
+@router.post("/signup")
+def signup(new_user : schema.create_user, db : Session = Depends(get_db)):
+
+    # 존재 여부
+    user = users.get_user_email(new_user.email, db)
+
+    if user:
+        raise HTTPException(
+            status_code= 409,
+            detail= "user가 이미 존재합니다"
+        )
+
+    # 회원가입
+    users.create_user(new_user, db)
+
+    return HTTPException(
+        status_code= 200,
+        detail= "회원가입 성공"
+    )
 
 
 
 
 '''
-#user 생성
-@user.post("/")
+#로그인 router
+login = APIRouter(
+    prefix = "/login"
+)
+
+
+
+#회원탈퇴 router
+remove = APIRouter(
+    prefix = "/remove"
+)
+
+
+
+
+
+#user 회원가입
+@signup.post("/")
 def create_user(request : Request, db : Session = Depends(get_db)):
     
     user_data = request.json()

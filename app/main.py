@@ -1,13 +1,13 @@
 # main app
 
 from fastapi import FastAPI
-from router.routers import user
+from router.routers import router
 
 
 def create_app() -> FastAPI:
 
     _app = FastAPI()
-    _app.include_router(user)
+    _app.include_router(router)
 
     return _app
 

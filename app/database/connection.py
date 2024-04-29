@@ -1,4 +1,4 @@
-#datavases 연결
+#databases 연결
 
 from database.session import SessionLocal
 

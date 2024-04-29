@@ -1,6 +1,6 @@
 # model 정의 
 
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, VARCHAR, DateTime
 from sqlalchemy.orm import relationship
 from database.session import Base
 
@@ -14,8 +14,8 @@ class User_tb(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(250), nullable=False, index=True)
-    password = Column(String(250), nullable=False)
+    email = Column(VARCHAR(250), nullable=False, index=True)
+    password = Column(VARCHAR(250), nullable=False)
     created_at = Column(DateTime, default=DateTime)
 
     #oauth_id = Column(Integer, ForeignKey(oauth.id))
