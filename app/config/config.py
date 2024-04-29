@@ -17,4 +17,3 @@ class Setting:
     #f-string
 
 
-setting = Setting()

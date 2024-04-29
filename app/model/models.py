@@ -1,26 +1,29 @@
 # model 정의 
 
-from SQLAlchemy import Column, ForeignKey, Integer, String, DateTime
-from SQLAlchemy.ext.declarative import declarative_base
-
-'''
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
-from database.database import Base
-'''
+from database.session import Base
 
+'''
+from SQLAlchemy.ext.declarative import declarative_base
 Base = declarative_base()
+'''
 
 #users 테이블
-class User(Base):
+class User_tb(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(250), nullable=False, index=True)
     password = Column(String(250), nullable=False)
-    create_at = Column(DateTime, default=DateTime)
+    created_at = Column(DateTime, default=DateTime)
 
     #oauth_id = Column(Integer, ForeignKey(oauth.id))
     #cat_id = Column(Integer, ForeignKey(cat.id))
+
+
+
+
 
 '''
 class Oauth(Base):

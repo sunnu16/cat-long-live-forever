@@ -1,13 +1,5 @@
 #datavases 연결
 
-'''
-from sqlalchemy import *
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine
-from config.config import setting
-'''
-
 from database.session import SessionLocal
 
 def get_db():
@@ -17,7 +9,7 @@ def get_db():
         yield db  # DB 연결 -> session 시작
 
     finally:
-        db.close()
+        db.close() #api 호출 끝나면 db세션 마무리
 
 
 

@@ -4,12 +4,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from database.connection import get_db
-from crud import users 
-#oAuth, home, health, diary  
+from crud import users
 
 
 #user router
-
 user = APIRouter(
     prefix= "/user"
 )
@@ -21,7 +19,17 @@ user = APIRouter(
 def get_user(user_id : int, db : Session = Depends(get_db)):
 
     response = users.get_user_id(user_id = user_id, db = db)
+    
     return response
+
+
+#로그인
+
+#회원가입
+
+#회원 탈퇴
+
+
 
 
 
