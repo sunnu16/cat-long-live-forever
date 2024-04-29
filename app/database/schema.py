@@ -15,6 +15,15 @@ class create_user(BaseModel):
 
 
 
+#로그인
+class token(BaseModel):
+    access_token : str
+    token_type : str
+    email : EmailStr
+
+
+
+    
 
 '''
 # 회원가입 유효성 검증

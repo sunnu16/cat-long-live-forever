@@ -59,7 +59,9 @@ def create_user(new_user : create_user, db : Session):
     db.commit()
 
 
-
+#로그인
+def check_pwd(new_password, hashed_password):
+    return pwd_context.verify(new_password, hashed_password)
 
 
 
