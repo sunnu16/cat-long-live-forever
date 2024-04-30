@@ -1,7 +1,7 @@
 # main app
 
 from fastapi import FastAPI
-from router.routers import router
+from routers import router
 
 
 def create_app() -> FastAPI:
@@ -13,10 +13,4 @@ def create_app() -> FastAPI:
 
 app = create_app()
 
-
-
-'''
-from typing import Union
-from fastapi import Depends
-from fastapi import Path
-'''
+#파이썬 접근제한자

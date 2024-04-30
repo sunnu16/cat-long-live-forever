@@ -15,6 +15,17 @@ import bcrypt
 import jwt
 
 
+#########
+from sqlalchemy.orm import Session
+from database.connection import get_db
+
+
+from crud import users
+from database import schema
+from fastapi import Depends
+
+
+
 
 #bcrypt 비번 암호화
 pwd_context = CryptContext(schemes= ['bcrypt'], deprecated= "auto")
@@ -38,6 +49,19 @@ def get_user_id(user_id : int, db : Session):
             "status" : status.HTTP_404_NOT_FOUND,
             "detail" : "일치하는 user가 존재하지 않습니다"
     }
+
+
+# router ("/user/{user_id}") 
+def get_user(user_id : int, db : Session = Depends(get_db)):
+
+    response = users.get_user_id(user_id = user_id, db = db)
+    
+    return response
+
+
+
+
+
 
 
 

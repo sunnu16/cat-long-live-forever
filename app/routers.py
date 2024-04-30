@@ -30,7 +30,6 @@ def get_user(user_id : int, db : Session = Depends(get_db)):
 
 
 
-
 #회원가입 router
 @router.post("/signup")
 def signup(new_user : schema.create_user, db : Session = Depends(get_db)):
