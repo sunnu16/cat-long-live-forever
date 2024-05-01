@@ -30,7 +30,27 @@ def get_user(user_id : int, db : Session = Depends(get_db)):
 
 
 
-#회원가입 router
+#회원가입 router  -> 수정 중
+@router.post("/signup")
+def signup(new_user : schema.create_user, db : Session = Depends(get_db)):
+
+    # 존재 여부
+    response = users.get_user_email(new_user.email, db)
+
+    return response
+
+    
+
+
+
+
+
+
+
+
+
+'''
+#회원가입 router   -> 원래 부분
 @router.post("/signup")
 def signup(new_user : schema.create_user, db : Session = Depends(get_db)):
 
@@ -50,6 +70,8 @@ def signup(new_user : schema.create_user, db : Session = Depends(get_db)):
         status_code= 200,
         detail= "회원가입 성공"
     )
+
+'''
 
 
 #로그인 routerdsfa

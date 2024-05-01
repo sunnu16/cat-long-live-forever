@@ -51,28 +51,19 @@ def get_user_id(user_id : int, db : Session):
     }
 
 
-# router ("/user/{user_id}") 
-def get_user(user_id : int, db : Session = Depends(get_db)):
-
-    response = users.get_user_id(user_id = user_id, db = db)
-    
-    return response
 
 
-
-
-
-
-
-
-#회원가입
+#회원가입 -> 수정 중
 def get_user_email(email : str, db : Session):
     return db.query(User_tb).filter(User_tb.email == email).first()
+
+# 존재 여부
+    user = users.get_user_email(new_user.email, db)
 
 
 def create_user(new_user : create_user, db : Session):
 
-    user = User_tb(
+    if user = User_tb(
         email = new_user.email,
         password = pwd_context.hash(new_user.password),
         #password = bcrypt.hashpw(new_user.password.encode('utf-8'), bcrypt.gensalt())
@@ -81,6 +72,41 @@ def create_user(new_user : create_user, db : Session):
     )
     db.add(user)
     db.commit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+#회원가입  -> 원래 부분
+def get_user_email(email : str, db : Session):
+    return db.query(User_tb).filter(User_tb.email == email).first()
+
+
+def create_user(new_user : create_user, db : Session):
+
+    if user = User_tb(
+        email = new_user.email,
+        password = pwd_context.hash(new_user.password),
+        #password = bcrypt.hashpw(new_user.password.encode('utf-8'), bcrypt.gensalt())
+        created_at = new_user.created_at
+
+    )
+    db.add(user)
+    db.commit()
+
+'''
+
+
+
 
 
 #로그인
