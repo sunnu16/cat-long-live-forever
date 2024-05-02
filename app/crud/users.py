@@ -1,14 +1,9 @@
 # 일반 회원가입 / 로그인 / 탈퇴
 
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from fastapi import HTTPException
-from fastapi import status
 
-
-from datetime import datetime
-from model.models import User_tb
-from database.schema import create_user
+from app.model.models import User_tb
+from app.database.schema import create_user
 
 from passlib.context import CryptContext
 import bcrypt
@@ -25,19 +20,11 @@ pwd_context = CryptContext(schemes= ['bcrypt'], deprecated= "auto")
 def get_user_id(user_id : int, db : Session):
     user = db.query(User_tb).filter(User_tb.id == user_id).first()
 
-    if user :
-        return {
+    if user:
+        return user
+    else:
+        return None
 
-            "status" : status.HTTP_200_OK,
-            "detail" : "user 조회 성공",
-            "data" : user
-        }
-    else : 
-        return{
-            
-            "status" : status.HTTP_404_NOT_FOUND,
-            "detail" : "일치하는 user가 존재하지 않습니다"
-    }
 
 
 
