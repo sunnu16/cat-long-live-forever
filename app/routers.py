@@ -10,9 +10,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database.connection import get_db
 
-
 from crud import users
 from database import schema
+
+from starlette import status
 
 
 
@@ -32,13 +33,12 @@ def get_user(user_id : int, db : Session = Depends(get_db)):
 
 #회원가입 router  -> 수정 중
 @router.post("/signup")
-def signup(new_user : schema.create_user, db : Session = Depends(get_db)):
 
-    # 존재 여부
-    response = users.get_user_email(new_user.email, db)
+def signup(new_user : schema.CreateUser, db : Session = Depends(get_db)):
+    users.create_user(db= db, new_user= new_user)
 
-    return response
 
+#, status_code= status.HTTP_204_NO_CONTENT
     
 
 

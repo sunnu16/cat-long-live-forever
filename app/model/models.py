@@ -10,7 +10,7 @@ Base = declarative_base()
 '''
 
 #users 테이블
-class User_tb(Base):
+class UserTb(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)

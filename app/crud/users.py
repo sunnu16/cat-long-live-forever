@@ -1,40 +1,33 @@
 # 일반 회원가입 / 로그인 / 탈퇴
 
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from fastapi import status
 
 
-from datetime import datetime
-from model.models import User_tb
-from database.schema import create_user
+from model.models import UserTb
+from database import schema
+
 
 from passlib.context import CryptContext
+from datetime import datetime
 import bcrypt
 import jwt
 
 
 #########
-from sqlalchemy.orm import Session
+
 from database.connection import get_db
 
-
-from crud import users
 from database import schema
 from fastapi import Depends
 
 
-
-
-#bcrypt 비번 암호화
-pwd_context = CryptContext(schemes= ['bcrypt'], deprecated= "auto")
-
-
 # user 조회
-
 def get_user_id(user_id : int, db : Session):
-    user = db.query(User_tb).filter(User_tb.id == user_id).first()
+    user = db.query(UserTb).filter(UserTb.id == user_id).first()
 
     if user :
         return {
@@ -52,25 +45,23 @@ def get_user_id(user_id : int, db : Session):
 
 
 
+#bcrypt 비번 암호화
+pwd_context = CryptContext(schemes= ['bcrypt'], deprecated= "auto")
+
 
 #회원가입 -> 수정 중
-def get_user_email(email : str, db : Session):
-    return db.query(User_tb).filter(User_tb.email == email).first()
 
-# 존재 여부
-    user = users.get_user_email(new_user.email, db)
+def create_user(new_user : schema.CreateUser, db : Session):
 
+    db_user = UserTb(
 
-def create_user(new_user : create_user, db : Session):
-
-    if user = User_tb(
         email = new_user.email,
         password = pwd_context.hash(new_user.password),
         #password = bcrypt.hashpw(new_user.password.encode('utf-8'), bcrypt.gensalt())
         created_at = new_user.created_at
-
     )
-    db.add(user)
+
+    db.add(db_user)
     db.commit()
 
 
