@@ -24,6 +24,23 @@ from database.connection import get_db
 from database import schema
 from fastapi import Depends
 
+'''
+# user 조회
+def get_user_id(user_id : int, db : Session):
+
+    user = db.query(UserTb).filter(UserTb.id == user_id).first()
+
+    return user
+'''
+
+
+# email 조회
+def get_user_email(new_user : schema.CreateUser, db : Session):
+    user = db.query(UserTb).filter(UserTb.email == new_user.email).first()
+    return user
+
+
+    
 
 # user 조회
 def get_user_id(user_id : int, db : Session):
@@ -45,15 +62,16 @@ def get_user_id(user_id : int, db : Session):
 
 
 
+
 #bcrypt 비번 암호화
 pwd_context = CryptContext(schemes= ['bcrypt'], deprecated= "auto")
 
 
-#회원가입 -> 수정 중
+#회원가입
 
 def create_user(new_user : schema.CreateUser, db : Session):
 
-    db_user = UserTb(
+    new_user = UserTb(
 
         email = new_user.email,
         password = pwd_context.hash(new_user.password),
@@ -61,40 +79,19 @@ def create_user(new_user : schema.CreateUser, db : Session):
         created_at = new_user.created_at
     )
 
-    db.add(db_user)
+    db.add(new_user)
     db.commit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-#회원가입  -> 원래 부분
-def get_user_email(email : str, db : Session):
-    return db.query(User_tb).filter(User_tb.email == email).first()
-
-
-def create_user(new_user : create_user, db : Session):
-
-    if user = User_tb(
-        email = new_user.email,
-        password = pwd_context.hash(new_user.password),
-        #password = bcrypt.hashpw(new_user.password.encode('utf-8'), bcrypt.gensalt())
-        created_at = new_user.created_at
-
-    )
-    db.add(user)
-    db.commit()
-
-'''
+    
+    if new_user.email :
+        raise HTTPException(
+            status_code= 400,
+            detail= "이미 존재하는 email입니다"
+        )
+    else :
+        raise HTTPException(
+            status_code= 200,
+            detail= "회원가입 성공"
+        )
 
 
 

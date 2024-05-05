@@ -23,25 +23,15 @@ router = APIRouter()
 #user 조회 router
 @router.get("/user/{user_id}")
 
-def get_user(user_id : int, db : Session = Depends(get_db)):
-
-    response = users.get_user_id(user_id = user_id, db = db)
-    
-    return response
 
 
 
-#회원가입 router  -> 수정 중
+
+#회원가입 router
 @router.post("/signup")
 
 def signup(new_user : schema.CreateUser, db : Session = Depends(get_db)):
     users.create_user(db= db, new_user= new_user)
-
-
-#, status_code= status.HTTP_204_NO_CONTENT
-    
-
-
 
 
 

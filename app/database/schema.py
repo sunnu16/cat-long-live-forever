@@ -10,19 +10,33 @@ from email_validator import validate_email
 from fastapi import HTTPException
 from datetime import datetime
 
+from model.models import UserTb
 
 
-# 회원가입
+
+
+# User
 class CreateUser(BaseModel):
     email : EmailStr
     password : str
     created_at : datetime
 
+# user 조회
+
+
+
+
+
+
+
+
+# 회원가입
+
+
 
 # 빈 값 핸들링
     @field_validator('email', 'password')
 
-    # 빈 값 핸들링
     def not_empty(cls, v):
         if not v or not v.strip():
 
@@ -31,7 +45,7 @@ class CreateUser(BaseModel):
                 status_code= 422,
                 detail= "이메일, 비밀번호를 입력해주세요"
             )
-        return v
+        return v 
 
 #email form 핸들링
     @field_validator('email')
@@ -72,6 +86,9 @@ class CreateUser(BaseModel):
                 detail= "비밀번호에 영문을 포함하여 입력해주세요"
                 )
         return v
+
+
+
 
 
 
