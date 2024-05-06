@@ -1,13 +1,13 @@
-# main app
+# main app - api/api 받아오기
 
 from fastapi import FastAPI
-from routers import router
+from api.api import api_router
 
 
 def create_app() -> FastAPI:
 
     _app = FastAPI()
-    _app.include_router(router)
+    _app.include_router(api_router)
 
     return _app
 
