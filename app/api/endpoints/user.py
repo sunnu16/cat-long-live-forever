@@ -55,4 +55,4 @@ def signup(new_user : schema.CreateUser, db : Session = Depends(get_db)):
             status_code= 200,
             detail= "회원가입 성공"
         ) 
-    #기능 문제없음 단, response body에 detail= "회원가입 성공" 안뜸 -null
+    #기능 문제없음 단, response body에 detail= "회원가입 성공" 안뜸 - null

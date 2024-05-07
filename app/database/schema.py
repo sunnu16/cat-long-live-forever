@@ -24,7 +24,7 @@ class CreateUser(BaseModel):
 
 
 
-# 회원가입
+# 회원가입 핸들링
 
 # 빈 값 핸들링
     @field_validator('email', 'password')

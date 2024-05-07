@@ -36,11 +36,11 @@ def get_user_id(user_id : int, db : Session):
 
 
 
-#bcrypt 비번 암호화
+# bcrypt 비번 암호화
 pwd_context = CryptContext(schemes= ['bcrypt'], deprecated= "auto")
 
 
-#회원가입
+# 회원가입
 def create_user(new_user : schema.CreateUser, db : Session):
 
     new_user = UserTb(
@@ -55,7 +55,7 @@ def create_user(new_user : schema.CreateUser, db : Session):
     db.commit()
 
 
-#email 존재유무 확인
+# 회원가입 - email 존재유무 확인
 def exist_email(new_user : schema.CreateUser, db : Session):
 
     return db.query(UserTb).filter(
@@ -67,7 +67,7 @@ def exist_email(new_user : schema.CreateUser, db : Session):
 
 
 
-#로그인
+# 로그인
 def check_pwd(new_password, hashed_password):
     return pwd_context.verify(new_password, hashed_password)
 
