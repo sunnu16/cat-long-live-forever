@@ -17,3 +17,8 @@ class Setting:
     #f-string
 
 
+class SettingKey:
+    SECRET_KEY : str = os.getenv("SECRET_KEY")
+    ALGORITHM : str = os.getenv("ALGORITHM")
+    ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+
