@@ -18,7 +18,8 @@ class Setting:
 
 
 class SettingKey:
-    SECRET_KEY : str = os.getenv("SECRET_KEY")
-    ALGORITHM : str = os.getenv("ALGORITHM")
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    ALGORITHM = os.getenv("ALGORITHM")
     ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+    #ACCESS_TOKEN_EXPIRE_MINUTES = float(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 

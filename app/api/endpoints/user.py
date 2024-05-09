@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi import status
 from fastapi import HTTPException
+
+#Fastapi oAuth2에선 username or password 양식을 사용해야함 -> 데이터 안에 user-name / email 작동x
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.orm import Session
@@ -10,12 +12,13 @@ from jose import jwt
 from datetime import timedelta, datetime
 
 
+
 from database.connection import get_db
 from crud import users
+from crud.users import create_access_token
 from database import schema
 
-from config.config import SettingKey
-
+from config.config import SettingKey #token
 
 
 
@@ -51,113 +54,185 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 def signup(new_user : schema.CreateUser, db : Session = Depends(get_db)):
 
     #회원 존재 유무 확인 (email)
-    exist_user = users.exist_email(new_user = new_user, db = db)
+    exist_user = users.exist_email(new_user.email, db)
 
     if exist_user:
         raise HTTPException(
-            status_code= 409,
+            
+            status_code= status.HTTP_409_CONFLICT,
             detail= "이미 존재하는 계정입니다"
         )
     
-    signup_user = users.create_user(new_user = new_user, db = db)
+    #회원가입
+    users.create_user(new_user = new_user, db = db)
 
-    if signup_user:
-        raise HTTPException(
-            status_code= 200,
-            detail= "회원가입 성공"
+    return HTTPException(
+
+        status_code= status.HTTP_200_OK,
+        detail= "회원가입 성공"
         ) 
-    #기능 문제없음 단, response body에 detail= "회원가입 성공" 안뜸 - null
 
 
 
+SECRET_KEY = "b2bf882e7f7f6fee20b3fbf7441e83a3087a0152ec506a255b575d9066f012ee"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-# 로그인  -->
- # 문제점 : Fastapi oAuth2에선 username or password 양실을 사용해야함 -> user-name / email 작동x
+#문제점 - .env -> config.config 안의 토큰 관련 위 3값을 인식 못하는 / 헤더, 쿠키
+
+
+
+# 로그인 router / 토큰 - 헤더
 @router.post("/login")
 
-def login(response : Response, login_user: OAuth2PasswordRequestForm = Depends(), db : Session = Depends(get_db)):
+def login(login_data : schema.Login = Depends(), db : Session = Depends(get_db)):
 
-    #회원 존재 유무 확인 (email)
-    user = users.exist_email(login_user.username, db)
+    user = users.exist_email(login_data.email, db)
 
-    # 계정 존재x
-    if not user:
+    # email check
+    if not user :
         raise HTTPException(
-            status_code= 400,
-            detail= "계정이 존재하지 않습니다"
+            status_code= status.HTTP_400_BAD_REQUEST,
+            detail= "email 혹은 비밀번호가 일치하지 않습니다",
+            headers= {"WWW-Authenticate": "Bearer"}
         )
     
-    # 로그인
-    response = users.check_pwd(login_user.password, user.password)
+    response = users.check_pwd(login_data.password, user.password)
 
-    # token 생성
-    access_token_expires = timedelta(minutes= SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = users.create_access_token(data={"sub" : user.username}, expires_delta = access_token_expires)
-
-    #쿠키에 
-    response.set_cookie(key="access_token", value= "access_token", expires= access_token_expires, httponly= True)
-
-    if not response:
+    # pwd check
+    if not response :
         raise HTTPException(
-
-            status_code= 400,
-            detail= "email 혹은 비밀번호가 일치하지 않습니다"
+            status_code= status.HTTP_400_BAD_REQUEST,
+            detail= "email 혹은 비밀번호가 일치하지 않습니다",
+            headers= {"WWW-Authenticate": "Bearer"}
         )
+    
+    # 토큰 - 헤더
+    data = {
+        "sub" : user.email,
+        "exp" : datetime.utcnow() + timedelta(minutes= ACCESS_TOKEN_EXPIRE_MINUTES),
+    }
+
+    access_token = jwt.encode(data, SECRET_KEY, algorithm= ALGORITHM)
+
     return {
-        
+        "access_token" : access_token,
+        "token_type" : "bearer",
+        "email" : user.email,
         "status" : status.HTTP_200_OK,
         "detail" : "로그인 성공",
-        "data" : schema.Token(access_token = access_token, token_type= "bearer")
-        }
+
+    }
 
 
 
-
-
-'''
+'''# 로그인 router / 토큰 - 쿠키
 @router.post("/login")
 
-def login(login_user: schema.Login = Depends(), db : Session = Depends(get_db)):
+def login(login_data : schema.Login = Depends(), db : Session = Depends(get_db)):
 
-    #회원 존재 유무 확인 (email)
-    exist_user = users.exist_email_1(login_user = login_user, db = db)
+    user = users.exist_email(login_data.email, db)
 
-    # 계정 존재x
-    if not exist_user:
+    # email check
+    if not user :
         raise HTTPException(
-            status_code= 400,
-            detail= "email 또는 비밀번호을 잘못 입력했습니다"
-        )
-    
-    # 로그인
-    response = users.check_pwd(login_user.password, exist_user.password)
-
-    # token 생성
-    access_token_expires = timedelta(minutes= Key.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub" : exist_user.email}, expires_delta = access_token_expires)
-
-    if not response:
-        raise HTTPException(
-            status_code= 400,
+            status_code= status.HTTP_400_BAD_REQUEST,
             detail= "email 혹은 비밀번호가 일치하지 않습니다"
         )
-    return {
-        "status" : status.HTTP_200_OK,
-        "detail" : "로그인 성공",
-        "data" : schema.Token(access_token = access_token, token_type= "bearer")
-        }
+    
+    response = users.check_pwd(login_data.password, user.password)
 
+    # 토큰 생성
+    access_token_expires = timedelta(minutes= ACCESS_TOKEN_EXPIRE_MINUTES)
+    #access_token_expires = timedelta(minutes= SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+    access_token = create_access_token(data = {"sub" : user.email}, expires_delta = access_token_expires)
+    #TypeError: create_access_token() got an unexpected keyword argument 'expires_delta'
+    
+    # 쿠키에 저장
+    response.set_cookie(key="access_token", value = access_token, expires = access_token_expires, httponly=True)
 
-
-
+    # pwd check
+    if not response :
+        raise HTTPException(
+            status_code= status.HTTP_400_BAD_REQUEST,
+            detail= "email 혹은 비밀번호가 일치하지 않습니다"
+        )
+    
+    return schema.LoginToken(access_token= access_token, token_type= "bearer")
 '''
 
 
+# 로그아웃 / 쿠키
+
+@router.get("/logout")
+
+def logout(response : Response, request : Request):
+    access_token = request.cookies.get("access_token")
+
+    #쿠키 삭제
+    response.delete_cookie(key= "access_token")
+
+    return HTTPException(
+
+        status_code= status.HTTP_200_OK,
+        detail= "로그아웃 성공"
+    )
 
 
 
 
 
-
-# 로그아웃
 # 회원탈퇴
+#email 일치 확인 후, 비번 일치 확인  다음 삭제
+@router.delete("/delete")
+def delete(delete_data : schema.DeleteUser, db : Session = Depends(get_db)):
+
+    #회원 존재 유무 확인 (email)
+    user = users.exist_email(delete_data.email, db)
+    if not user:
+
+        raise HTTPException(            
+            status_code= status.HTTP_409_CONFLICT,
+            detail= "email 혹은 비밀번호가 일치하지 않습니다"
+        )
+    
+    response = users.check_pwd(delete_data.password, user.password)
+
+    # pwd check
+    if not response :
+        raise HTTPException(
+
+            status_code= status.HTTP_400_BAD_REQUEST,
+            detail= "email 혹은 비밀번호가 일치하지 않습니다"
+        )
+    
+    users.delete_user(delete_data = delete_data, db = db)
+
+    return HTTPException(
+        
+        status_code= status.HTTP_200_OK,
+        detail= "회원탈퇴 성공"
+        )
+
+
+
+
+#비밀번호 찾기 (재설정)
+#email 일치 확인 후, 임의 비번(랜덤 조건:영문 대소문자, 숫자) 생성 -> 해당 email로 임의 비번 발송
+@router.post("/find-pwd")
+def find(find_data : schema.FindPwd, db : Session = Depends(get_db)):
+
+    #회원 존재 유무 확인 (email)
+    user = users.exist_email(find_data.email, db)
+    if not user:
+
+        raise HTTPException(            
+            status_code= status.HTTP_409_CONFLICT,
+            detail= "email이 일치하지 않습니다"
+        )
+    
+    #email 유저 맞으면 임의변경 된 비번을 해당 계정 이메일로 발송하기
+    if user :
+        users.change_pwd(find_data)
+    

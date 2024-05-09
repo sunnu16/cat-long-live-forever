@@ -14,7 +14,6 @@ class UserTb(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(VARCHAR(40), nullable=False, index=True)
     email = Column(VARCHAR(250), nullable=False, index=True)
     password = Column(VARCHAR(250), nullable=False)
     created_at = Column(DateTime, default=DateTime)

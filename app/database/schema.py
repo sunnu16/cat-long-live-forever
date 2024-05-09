@@ -18,7 +18,6 @@ from model.models import UserTb
 
 # 회원가입
 class CreateUser(BaseModel):
-    username : str
     email : str
     password : str
     created_at : datetime
@@ -26,7 +25,7 @@ class CreateUser(BaseModel):
 
 
 # 빈 값 핸들링
-    @field_validator('email', 'password', 'username')
+    @field_validator('email', 'password')
 
     def not_empty(cls, v):
         if not v or not v.strip():
@@ -122,12 +121,48 @@ class Login(BaseModel):
 
 
 #로그인 토큰
-class Token(BaseModel):
+class LoginToken(BaseModel):
     access_token : str
     token_type : str
     
 
 
+# 회원탈퇴
+class DeleteUser(BaseModel):
+    email : str
+    password : str
+
+    # 빈 값 핸들링
+    @field_validator('email', 'password')
+
+    def not_empty(cls, v):
+        if not v or not v.strip():
+
+            raise HTTPException(
+
+                status_code= 422,
+                detail= "모든 항목을 입력해주세요"
+            )
+        return v
+    
+    
+    #email form 핸들링
+    @field_validator('email')
+
+    def validate_email(cls, v):
+        try:
+            validate_email(v)
+        except EmailNotValidError:
+            raise HTTPException(
+                status_code=422,
+                detail= "올바른 형식의 이메일을 입력해주세요"
+                )
+        return v
+
+# 비번 찾기
+class FindPwd(BaseModel):
+    email : str
+    password : str
 
     
 
