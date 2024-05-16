@@ -2,7 +2,7 @@
 
 from database.session import SessionLocal
 
-def get_db():
+def connect_db():
     db = SessionLocal()
 
     try:

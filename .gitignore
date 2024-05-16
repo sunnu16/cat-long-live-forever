@@ -6,6 +6,8 @@
 *.env*
 *.pem
 *.key*
+*.vscode*
+*.pylintrc*
 
 ### Database ###
 *.accdb

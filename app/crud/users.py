@@ -10,23 +10,56 @@ import jwt, bcrypt
 
 from model.models import UserTb
 from database import schema
+# from config.config import SettingKey
 from config.config import SettingKey
-from database.connection import get_db
+from database.connection import connect_db
 
 import random, string
 
+
+'''
+view : 
+ - C에서 받은 M의 데이터를 시각적으로 보여주기 위한 역할
+ - 레이아웃과 화면 처리 (model, controiller의 정보를 따로 저장 x
+ - M C의 변경 발생 시, 변경에 대한 처리방법을 구현해야만함
+'''
 
 
 
 # user id 조회
 def get_user_id(user_id : int, db : Session):
 
-    user = db.query(UserTb).filter(UserTb.id == user_id).first()
+    user = db.query(UserTb).filter(UserTb.id == user_id).first()   
+    db.close
 
     if user :
-        return user
-    else :
-        return None
+        return{
+            "status" : status.HTTP_200_OK,
+            "detail" : "회원 조회 성공",
+            "data" : user
+        }
+        
+    if not user :
+        return{
+            "status" : status.HTTP_404_NOT_FOUND,
+            "detail" : "일치하는 회원이 존재하지 않습니다"
+        }
+
+
+
+ # email 존재유무 확인 
+def exist_email(email : str, db : Session):
+
+    res = db.query(UserTb).filter(UserTb.email == email).first()
+    db.close
+
+    if res :
+        return HTTPException(
+
+            status_code= status.HTTP_409_CONFLICT,
+            detail= "이미 존재하는 계정입니다"
+        )
+
 
 
 
@@ -48,12 +81,10 @@ def create_user(new_user : schema.CreateUser, db : Session):
     db.add(new_user)
     db.commit()
 
-
-
- # email 존재유무 확인 
-def exist_email(email : str, db : Session):
-
-    return db.query(UserTb).filter(UserTb.email == email).first()
+    return HTTPException(
+        status_code= status.HTTP_200_OK,
+        detail= "회원가입 성공"
+    )
 
 
 
@@ -111,16 +142,16 @@ print(new_random_pwd)
 
 
 
-
+'''
 # 비밀번호 재설정 / change_pwd(임의 비번 생성 + 변경 저장)
 def change_pwd(change_data : schema.FindPwd, db : Session):
 
     
 
-    random_pwd(change_data) = pwd_context.hash(schema.FindPwd.password)
+    new_random_pwd = pwd_context.hash(schema.FindPwd.password)
 
     db.add(change_data)
-    db.commit()
+    db.commit()'''
 
 
 

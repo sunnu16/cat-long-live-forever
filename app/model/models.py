@@ -1,7 +1,7 @@
 # model 정의 
 
 from sqlalchemy import Column, Integer, VARCHAR, DateTime
-from sqlalchemy.orm import relationship
+#from sqlalchemy.orm import relationship
 from database.session import Base
 
 '''

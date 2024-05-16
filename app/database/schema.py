@@ -9,6 +9,7 @@ from email_validator import EmailNotValidError
 from email_validator import validate_email
 
 from fastapi import HTTPException
+from fastapi import status
 from datetime import datetime
 
 from model.models import UserTb
@@ -22,8 +23,6 @@ class CreateUser(BaseModel):
     password : str
     created_at : datetime
 
-
-
 # 빈 값 핸들링
     @field_validator('email', 'password')
 
@@ -32,11 +31,10 @@ class CreateUser(BaseModel):
 
             raise HTTPException(
 
-                status_code= 422,
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "모든 항목을 입력해주세요"
             )
-        return v 
-
+        return v
 
 #비밀번호 handling
     @field_validator('password')    
@@ -46,7 +44,7 @@ class CreateUser(BaseModel):
         if len(v) < 10:
             raise HTTPException(
 
-                status_code= 422,
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "비밀 번호를 10자리 이상 입력하세요"
             )
         
@@ -54,14 +52,14 @@ class CreateUser(BaseModel):
         if not any(char.isdigit() for char in v):            
             raise HTTPException(
 
-                status_code=422,
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "비밀번호에 숫자를 포함하여 입력해주세요"             
             )
         # 문자 포함
         if not any(char.isalpha() for char in v):
             raise HTTPException(
 
-                status_code=422,
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "비밀번호에 영문을 포함하여 입력해주세요"
                 )
         return v
@@ -75,13 +73,11 @@ class CreateUser(BaseModel):
             validate_email(v)
         except EmailNotValidError:
             raise HTTPException(
-                status_code=422,
+
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "올바른 형식의 이메일을 입력해주세요"
                 )
         return v
-
-
-
 
 
 
@@ -99,7 +95,7 @@ class Login(BaseModel):
 
             raise HTTPException(
 
-                status_code= 422,
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "모든 항목을 입력해주세요"
             )
         return v
@@ -113,7 +109,7 @@ class Login(BaseModel):
             validate_email(v)
         except EmailNotValidError:
             raise HTTPException(
-                status_code=422,
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "올바른 형식의 이메일을 입력해주세요"
                 )
         return v
@@ -140,7 +136,7 @@ class DeleteUser(BaseModel):
 
             raise HTTPException(
 
-                status_code= 422,
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "모든 항목을 입력해주세요"
             )
         return v
@@ -154,7 +150,7 @@ class DeleteUser(BaseModel):
             validate_email(v)
         except EmailNotValidError:
             raise HTTPException(
-                status_code=422,
+                status_code= status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail= "올바른 형식의 이메일을 입력해주세요"
                 )
         return v
@@ -163,6 +159,3 @@ class DeleteUser(BaseModel):
 class FindPwd(BaseModel):
     email : str
     password : str
-
-    
-

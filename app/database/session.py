@@ -4,10 +4,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from config.config import Setting
+from config.config import SettingKey
 
 
-SQLALCHEMY_DATABASE_URL = Setting.DB_url
+SQLALCHEMY_DATABASE_URL = SettingKey.DB_url
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 

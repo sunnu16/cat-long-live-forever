@@ -15,6 +15,8 @@ from database import schema
 
 from starlette import status
 
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+
 
 
 router = APIRouter()
