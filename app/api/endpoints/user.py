@@ -13,7 +13,7 @@ from datetime import timedelta, datetime
 
 from database.connection import connect_db
 from crud import users
-from crud.users import create_access_token
+from crud.users import create_access_token_cookie
 from database import schema
 
 from database.schema import CreateUser
@@ -53,59 +53,27 @@ def get_user(user_id : int, db : Session = Depends(connect_db)):
 def signup(new_user : schema.CreateUser, db : Session = Depends(connect_db)):
 
     #회원 존재 유무 확인 (email)
-    users.exist_email(new_user.email, db)    
+    users.exist_email(new_user.email, db)
     #회원가입
     return users.create_user(new_user = new_user, db = db)
-
-
 
 
 
 # 로그인 router / 토큰 - 헤더
 @router.post("/login")
 
-def login(login_data : schema.Login = Depends(), db : Session = Depends(connect_db)):
-    print(f"SettingKey: {settings}")
-    print(f"secret key: {settings.SECRET_KEY}")
-    print(f"algorithm: {settings.ALGORITHM}")
-    print(f"expire: {settings.ACCESS_TOKEN_EXPIRE_MINUTES}")
+def login(login_data : schema.Login, db : Session = Depends(connect_db)):
+   
+    # id_email check
+    user = users.check_email(login_data.email, db)
 
-    user = users.exist_email(login_data.email, db)
-
-    # email check
-    if not user :
-        raise HTTPException(
-            status_code= status.HTTP_400_BAD_REQUEST,
-            detail= "email 혹은 비밀번호가 일치하지 않습니다",
-            headers= {"WWW-Authenticate": "Bearer"}
-        )
-    
-    response = users.check_pwd(login_data.password, user.password)
-
+    if user:
     # pwd check
-    if not response :
-        raise HTTPException(
-            status_code= status.HTTP_400_BAD_REQUEST,
-            detail= "email 혹은 비밀번호가 일치하지 않습니다",
-            headers= {"WWW-Authenticate": "Bearer"}
-        )
+        users.check_pwd_header(login_data.password, user.password)
+    #token create
+    return users.token_header(user)
+
     
-    # 토큰 - 헤더
-    data = {
-        "sub" : user.email,
-        "exp" : datetime.utcnow() + timedelta(minutes= settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-    } # timedelta(minutes= float(SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES))
-
-    access_token = jwt.encode(data, settings.SECRET_KEY, algorithm= settings.ALGORITHM)
-
-    return {
-        "access_token" : access_token,
-        "token_type" : "bearer",
-        "email" : user.email,
-        "status" : status.HTTP_200_OK,
-        "detail" : "로그인 성공",
-
-    }
 
 
 
@@ -125,23 +93,23 @@ def login(login_data : schema.Login = Depends(), db : Session = Depends(get_db))
     
     response = users.check_pwd(login_data.password, user.password)
 
-    # 토큰 생성
-    access_token_expires = timedelta(minutes= ACCESS_TOKEN_EXPIRE_MINUTES)
-    #access_token_expires = timedelta(minutes= SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES)
-    
-    access_token = create_access_token(data = {"sub" : user.email}, expires_delta = access_token_expires)
-    #TypeError: create_access_token() got an unexpected keyword argument 'expires_delta'
-    
-    # 쿠키에 저장
-    response.set_cookie(key="access_token", value = access_token, expires = access_token_expires, httponly=True)
-
     # pwd check
     if not response :
         raise HTTPException(
             status_code= status.HTTP_400_BAD_REQUEST,
             detail= "email 혹은 비밀번호가 일치하지 않습니다"
         )
+
+    # 토큰 생성
+    access_token_expires = timedelta(minutes= ACCESS_TOKEN_EXPIRE_MINUTES)
+    #access_token_expires = timedelta(minutes= SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES)
     
+    access_token = create_access_token_cookie(data = {"sub" : user.email}, expires_delta = access_token_expires)
+    #TypeError: create_access_token_cookie() got an unexpected keyword argument 'expires_delta'
+    
+    # 쿠키에 저장
+    response.set_cookie(key="access_token", value = access_token, expires = access_token_expires, httponly=True)
+
     return schema.LoginToken(access_token= access_token, token_type= "bearer")
 '''
 
