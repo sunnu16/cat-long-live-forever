@@ -7,13 +7,12 @@ from fastapi import HTTPException, status, Depends
 from passlib.context import CryptContext
 from datetime import timedelta, datetime
 import jwt
-from starlette.responses import JSONResponse
 
 from model.models import UserTb
 from database import schema
-# from config.config import SettingKey
+
 from config.config import SettingKey
-from database.connection import connect_db
+
 
 import random, string
 
@@ -27,120 +26,197 @@ view :
 
 
 
-# user id 조회
+# user id 조회 로직
+class GetUserId:
+    def get_user_id(user_id : int, db : Session):
 
-def get_user_id(user_id : int, db : Session):
+        user = db.query(UserTb).filter(UserTb.id == user_id).first()   
+        db.close
 
-    user = db.query(UserTb).filter(UserTb.id == user_id).first()   
-    db.close
+        if user :
+            return{
 
-    if user :
-        return{
-            "status" : status.HTTP_200_OK,
-            "detail" : "회원 조회 성공",
-            "data" : user
-        }
-        
-    if not user :
-        return{
-            "status" : status.HTTP_404_NOT_FOUND,
-            "detail" : "일치하는 회원이 존재하지 않습니다"
-        }
+                "status" : status.HTTP_200_OK,
+                "detail" : "회원 조회 성공",
+                "data" : user
+            }
+            
+        if not user :
+            return{
 
+                "status" : status.HTTP_404_NOT_FOUND,
+                "detail" : "일치하는 회원이 존재하지 않습니다"
+            }
 
-
- # 회원가입 - email 존재유무 확인 
-def exist_email(email : str, db : Session):
-
-    res = db.query(UserTb).filter(UserTb.email == email).first()
-    db.close
-    
-    if res :
-        raise HTTPException(
-
-            status_code= status.HTTP_409_CONFLICT,
-            detail= "이미 존재하는 계정입니다"
-        )
-    return res
 
 
 # bcrypt 비번 암호화
-pwd_context = CryptContext(schemes= ['bcrypt'], deprecated= "auto")
-
-
-# 회원가입
-def create_user(new_user : schema.CreateUser, db : Session):
-
-    new_user = UserTb(
-
-        email = new_user.email,
-        password = pwd_context.hash(new_user.password),
-        #password = bcrypt.hashpw(new_user.password.encode('utf-8'), bcrypt.gensalt())
-        created_at = new_user.created_at
-    )
-
-    db.add(new_user)
-    db.commit()
-
-    return HTTPException(
-        status_code= status.HTTP_200_OK,
-        detail= "회원가입 성공"
-    )
+pwd_context = CryptContext(schemes= ['bcrypt'], deprecated= "auto")  
 
 
 
- # 로그인 - email 존재x
-def check_email(email : str, db : Session):
+# 회원가입 로직
+class SignUp:
 
-    res = db.query(UserTb).filter(UserTb.email == email).first()
-    db.close
+    # 회원가입 - email 존재유무 확인 
+    def exist_email(email : str, db : Session):
 
-    if not res :
-        raise HTTPException(
-
-            status_code= status.HTTP_400_BAD_REQUEST,
-            detail= "email 혹은 비밀번호가 일치하지 않습니다",
-            headers= {"WWW-Authenticate": "Bearer"}
-
-        )
-    return res
-    
-    
-
-#로그인 - pwd 체크
-def check_pwd_header(plain_password : str, hashed_password : str):
-
-    pwd = pwd_context.verify(plain_password, hashed_password)
-
-    if not pwd :
+        res = db.query(UserTb).filter(UserTb.email == email).first()
+        db.close
         
-        raise HTTPException(
-            status_code= status.HTTP_400_BAD_REQUEST,
-            detail= "email 혹은 비밀번호가 일치하지 않습니다",
-            headers= {"WWW-Authenticate": "Bearer"}
+        if res :
+            raise HTTPException(
+
+                status_code= status.HTTP_409_CONFLICT,
+                detail= "이미 존재하는 계정입니다"
+            )
+        return res
+
+
+    # 유저 생성
+    def create_user(new_user : schema.CreateUser, db : Session):
+
+        new_user = UserTb(
+
+            email = new_user.email,
+            password = pwd_context.hash(new_user.password),
+            #password = bcrypt.hashpw(new_user.password.encode('utf-8'), bcrypt.gensalt())
+            created_at = new_user.created_at
         )
-    return pwd
+
+        db.add(new_user)
+        db.commit()
+
+        return HTTPException(
+
+            status_code= status.HTTP_200_OK,
+            detail= "회원가입 성공"
+        )
+
+
+
+# 로그인 로직
+class Login:
+
+    # 로그인 - email 존재x
+    def check_email(email : str, db : Session):
+
+        res = db.query(UserTb).filter(UserTb.email == email).first()
+        db.close
+
+        if not res :
+            raise HTTPException(
+
+                status_code= status.HTTP_401_UNAUTHORIZED,
+                detail= "email 혹은 비밀번호가 일치하지 않습니다",
+                headers= {"WWW-Authenticate": "Bearer"}
+
+            )
+        return res
+        
     
+    #로그인 - pwd 체크
+    def check_pwd(plain_password : str, hashed_password : str):
 
-# 토큰 생성 -header
-def token_header(user : str):
-    # 토큰 - 헤더
-    data = {
-        "sub" : user.email,
-        "exp" : datetime.utcnow() + timedelta(minutes= SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES),
-    } # timedelta(minutes= float(SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES))
+        pwd = pwd_context.verify(plain_password, hashed_password)
 
-    access_token = jwt.encode(data, SettingKey.SECRET_KEY, algorithm= SettingKey.ALGORITHM)
+        if not pwd :
+            
+            raise HTTPException(
 
-    return {
-        "access_token" : access_token,
-        "token_type" : "bearer",
-        "email" : user.email,
-        "status" : status.HTTP_200_OK,
-        "detail" : "로그인 성공",
-    }
+                status_code= status.HTTP_401_UNAUTHORIZED,
+                detail= "email 혹은 비밀번호가 일치하지 않습니다",
+                headers= {"WWW-Authenticate": "Bearer"}
+            )
+        return pwd
+        
+
+    # 토큰 생성 - header
+    def token_header(user : str):
+        # 토큰 - 헤더
+        data = {
+
+            "sub" : user.email,
+            "exp" : datetime.utcnow() + timedelta(minutes= SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES),
+        } # timedelta(minutes= float(SettingKey.ACCESS_TOKEN_EXPIRE_MINUTES))
+
+        access_token = jwt.encode(data, SettingKey.SECRET_KEY, algorithm= SettingKey.ALGORITHM)
+
+        return {
+
+            "access_token" : access_token,
+            "token_type" : "bearer",
+            "email" : user.email,
+            "status" : status.HTTP_200_OK,
+            "detail" : "로그인 성공",
+        }
 
    
+
+# 회원탈퇴 로직
+class Delete:
+
+    # 회원삭제
+    def delete_user(delete_data : schema.DeleteUser, db : Session):
+    
+        db.query(UserTb).filter(UserTb.email == delete_data.email).delete()
+        db.commit()
+        
+        return HTTPException(      
+
+            status_code= status.HTTP_200_OK,
+            detail= "회원탈퇴 성공"
+            )
+
+
+'''    # 회원탈퇴 - email 검증
+    def check_email(email : str, db : Session):
+
+        res = db.query(UserTb).filter(UserTb.email == email).first()
+        db.close
+
+        if not res :
+            raise HTTPException(
+
+                status_code= status.HTTP_401_UNAUTHORIZED,
+                detail= "email 혹은 비밀번호가 일치하지 않습니다",
+                headers= {"WWW-Authenticate": "Bearer"}
+
+            )
+        return res
+    
+
+    #회원탈퇴 - pwd 체크
+    def check_pwd_header(plain_password : str, hashed_password : str):
+
+        pwd = pwd_context.verify(plain_password, hashed_password)
+
+        if not pwd :
+            
+            raise HTTPException(
+                status_code= status.HTTP_401_UNAUTHORIZED,
+                detail= "email 혹은 비밀번호가 일치하지 않습니다",
+                headers= {"WWW-Authenticate": "Bearer"}
+            )
+        return pwd'''
+    
+
+
+
+
+
+
+''' #pwd 체크
+def check_pwd(plain_password : str, hashed_password :str):
+    return pwd_context.verify(plain_password, hashed_password)'''
+    
+
+
+
+
+
+
+
 
 # 로그인 토큰 생성 -쿠키
 def create_access_token_cookie(data : dict, expire_delta : timedelta | None = None):
@@ -153,23 +229,10 @@ def create_access_token_cookie(data : dict, expire_delta : timedelta | None = No
         expire = datetime +timedelta(minutes=15)
     
     to_encode.update({"exp" : expire})
+    
     encoded_jwt = jwt.encode(to_encode, SettingKey.SECRET_KEY, algorithm= SettingKey.ALGORITHM)
 
     return encoded_jwt
-
-
- #pwd 체크
-def check_pwd(plain_password : str, hashed_password :str):
-    return pwd_context.verify(plain_password, hashed_password)
-    
-
-
-# 회원탈퇴 - 쿠키 
-def delete_user(delete_data : schema.DeleteUser, db : Session):
-   
-    db.query(UserTb).filter(UserTb.email == delete_data.email).delete()
-    db.commit()
-
 
 
 
@@ -204,13 +267,6 @@ def change_pwd(change_data : schema.FindPwd, db : Session):
 
     db.add(change_data)
     db.commit()'''
-
-
-
-
-
-
-
 
 
 
